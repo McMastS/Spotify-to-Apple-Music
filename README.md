@@ -7,5 +7,6 @@ If you want to run this on your own server, you'd need a config file that contai
 
 Todo:
 1. The app became much bigger than expected, so reorganize the code using Flask best practices for structure
-2. Add a login/user account functionality
-3. Deploy (probably using Heroku)
+2. Display all created playlists somewhere
+3. Add a login/user account functionality
+4. Deploy (probably using Heroku)
