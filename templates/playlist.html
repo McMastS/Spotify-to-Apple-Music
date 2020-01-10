@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block head %}
+<title>Spotify to Apple Music</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <div class="playlist-form">
+        <h1>Create Playlist</h1>
+        <form method="POST" action="{{ url_for('playlist') }}">
+            <div class="form-group">
+                <label for="spotifyLink">Spotify Link</label>
+                <input type="text" id="spotifyLink" name="spotifyLink" class="form-control" 
+                    placeholder="https://open.spotify.com/playlist/5e1bpazQUEHijFhcJobkAp">
+            </div>
+            <div class="form-group">
+                <label for="applePlaylistName">Name</label>
+                <input type="text" id="applePlaylistName" name="applePlaylistName" class="form-control" 
+                    placeholder="My Apple Playlist">
+                <label for="applePlaylistDesc">Description</label>
+                <textarea rows="3" id="applePlaylistDesc" name="applePlaylistDesc" class="form-control" 
+                    placeholder="My super cool playlist from Spotify!"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" onclick="loading">Migrate playlist</button>
+        </form>  
+    </div>
+</div>
+{% endblock %}

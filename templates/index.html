@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block head %}
+<title>Spotify to Apple Music</title>
+<script>let aDevToken = '{{ a_dev_token }}'; </script>
+<script src="{{ url_for('static', filename='javascript/script.js') }}"></script>
+<script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <div class="welcome">
+        <h1>Welcome!</h1>
+        <p>Enter your name and hit the button below to login to your Apple Music account.
+        Once you are logged in, you will be able to convert a spotify playlist
+        into an Apple Music playlist.
+        </p>
+        
+        <button type="button" id='login-btn' class="btn btn-primary">Login</button>
+    </div>
+</div>
+{% endblock %}
