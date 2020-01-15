@@ -34,11 +34,10 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-    if request.method == 'POST':
-        # Reload port every time user logs in to ensure API tokens remain valid
-        port.refresh_dev_tokens()
-        port.set_a_user_token(request.json['Music-User-Token'])
-        return redirect(url_for('playlist'))
+    # Reload port every time user logs in to ensure API tokens remain valid
+    port.refresh_dev_tokens()
+    port.set_a_user_token(request.json['Music-User-Token'])
+    return redirect(url_for('playlist'))
 
 @app.route('/playlist', methods=['GET', 'POST'])
 def playlist():
@@ -56,11 +55,17 @@ def playlist():
         except Exception as e:
             print(e, file=sys.stderr)
             return 'Something went wrong'
+        return redirect(url_for('history'))
     
     if port.am.user_access_token:
         return render_template('playlist.html')
     else:
         return redirect(url_for('index'))
+
+@app.route('/history', methods=['GET'])
+def history():
+    history = Playlist.query.order_by(Playlist.date_added).all()
+    return render_template('history.html',history=history)
 
 if __name__ == "__main__":
     app.run(debug=True)

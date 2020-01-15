@@ -10,7 +10,7 @@ label {
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    flex-direction: column;
 }
 
 .welcome {
@@ -21,4 +21,9 @@ label {
 .playlist-form {
     width: 500px;
     height: 500px;
+}
+
+.playlist-table {
+    width: 50%;
+    height: 50%;
 }
