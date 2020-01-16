@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
 {% block head %}
+<script>let aDevToken = '{{ a_dev_token }}'; </script>
+<script src="{{ url_for('static', filename='javascript/playlist.js') }}"></script>
+<script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
 {% endblock %}
 
 {% block body %}
 <div class="content">
     <div class="playlist-form">
         <h1>Create Playlist</h1>
-        <form method="POST" action="{{ url_for('playlist') }}">
+        <form id="playlist-form" method="POST" action="{{ url_for('playlist') }}">
             <div class="form-group">
                 <label for="spotifyLink">Spotify Link</label>
                 <input type="text" id="spotifyLink" name="spotifyLink" class="form-control" 
@@ -20,8 +23,9 @@
                 <textarea rows="3" id="applePlaylistDesc" name="applePlaylistDesc" class="form-control" 
                     placeholder="My super cool playlist from Spotify!"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary" onclick="loading">Migrate playlist</button>
+            <button type="button" id="migrate-btn" class="btn btn-primary">Migrate playlist</button>
         </form>  
     </div>
+    <a href="/history">Click here to see history</a>
 </div>
 {% endblock %}

@@ -91,9 +91,10 @@ class PortPlaylist():
             name = playlist['items'][i]['track']['name']
             artist = playlist['items'][i]['track']['artists'][0]['name']
             album = playlist['items'][i]['track']['album']['name']
-            query = '{0} {1} {2}'.format(name, artist, album)
-            track = self.am.search(query, types=['songs'], limit=5)
+
+            track = self.am.search(name, types=['songs'], limit=5)
             try:
+                # for song 
                 id =  track['results']['songs']['data'][0]['id']
                 track_ids.append(id)
             except KeyError as e:

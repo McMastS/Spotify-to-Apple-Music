@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block head %}
+<script src="{{ url_for('static', filename='javascript/history.js') }}"></script>
 {% endblock %}
 
 {% block body %}
@@ -15,6 +16,7 @@
                 <th scope="col">Name</th>
                 <th scope="col">Description</th>
                 <th scope="col">Spotify Link</th>
+                <th scope="col">Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -24,11 +26,15 @@
                 <td>{{ playlist.name }}</td>
                 <td>{{ playlist.description }}</td>
                 <td><a href="{{ playlist.spotify_link }}">Spotify</a></td>
+                <td>
+                    <button type="button" id="{{playlist.id}}" class="btn btn-danger" onclick="delete_playlist(this.id)">Delete</button>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% endif %}
+    <a href="/playlist">Click here to create another playlist!</a>
 </div>
 
 {% endblock %}

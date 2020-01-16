@@ -10,12 +10,7 @@ document.addEventListener('musickitloaded', () => {
       }
     });
 
-    function loading() {
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('content').style.display = 'none';
-    }
-
-    document.getElementById('login-btn').addEventListener('click', () => {
+    document.getElementById('migrate-btn').addEventListener('click', () => {
         music.authorize().then(async musicUserToken => {
             // "Login" by setting the musicUserToken
             await fetch('http://localhost:5000/login', {
@@ -26,11 +21,9 @@ document.addEventListener('musickitloaded', () => {
                 }
             }).then(response => {
                 if (!response.ok) {
-                    alert('Something went wrong with your Apple ID Authentication. Please try again.');
-                }
-                
-                if (response.redirected) {
-                    window.location.href = response.url;
+                    alert('Something went wrong with your Apple ID Authentication. Please try again.'); 
+                } else {
+                    document.getElementById('playlist-form').submit();
                 }
             })
         });
