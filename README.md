@@ -4,8 +4,10 @@ I find myself enjoying Spotify playlists much more than I enjoy the Apple Music 
 Spotify playlist to an Apple Music account. This project is still ongoing, and I will update this doc whenever I make progress.
 
 To run on your machine:
-Obtain the necessary IDs and Secrets from Apple Music and Spotify, then add them to the 'example_config.py' file. Then:
+Obtain the necessary IDs and Secrets from Apple Music and Spotify, then add them to the 'example_config.py' file. Then
+    
     <code>pip install -r requirements.txt</code>
+    
     <code>flask run</code>
 
 
