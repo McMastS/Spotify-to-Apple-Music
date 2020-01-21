@@ -1,15 +1,15 @@
+import json
+import requests
 import spotipy
 import applemusicpy
-import requests
-import json
-import sys
 from spotipy import util
 
 class MyAppleMusic(applemusicpy.AppleMusic):
     def __init__(self, secret_key, key_id, team_id, proxies=None,
-                 requests_session=True, max_retries=10, requests_timeout=None, session_length=12, user_access_token=None):
+                 requests_session=True, max_retries=10, requests_timeout=None,
+                 session_length=12, user_access_token=None):
         super().__init__(secret_key, key_id, team_id, proxies,
-                 requests_session, max_retries, requests_timeout, session_length)
+                         requests_session, max_retries, requests_timeout, session_length)
         self.user_access_token = user_access_token
 
     def _auth_headers(self):
@@ -24,24 +24,25 @@ class MyAppleMusic(applemusicpy.AppleMusic):
         if self.user_access_token:
             headers['Music-User-Token'] = self.user_access_token
         return headers
-    
+
     def _build_track(self, track_id, track_type='songs'):
         return {
             'id': str(track_id),
-            'type': 'songs',
+            'type': track_type,
         }
 
     def _build_tracks(self, track_ids, track_type='songs'):
         return list(map(lambda track_id: self._build_track(track_id, track_type),
-                   track_ids))
+                        track_ids))
 
     def _post(self, url, params, payload):
         headers = self._auth_headers()
         headers['Content-Type'] = 'application/json'
-        response = requests.post(url, headers=headers, params=params, data=json.dumps(payload), timeout=30)
+        response = requests.post(url, headers=headers, params=params,
+                                 data=json.dumps(payload), timeout=30)
         response.raise_for_status()
         return response.json()
-    
+
     def create_playlist(self, name, description=None, track_ids=None, include=None):
         # https://developer.apple.com/documentation/applemusicapi/create_a_new_library_playlist
         url = self.root + 'me/library/playlists'
@@ -49,7 +50,7 @@ class MyAppleMusic(applemusicpy.AppleMusic):
         payload = {'attributes': {'name': name}}
         if description:
             payload['attributes']['description'] = description
-        
+
         if track_ids:
             tracks = self._build_tracks(track_ids)
             payload['relationships'] = {'tracks': {'data': tracks}}
@@ -68,38 +69,46 @@ class PortPlaylist():
         self.a_key_id = a_key_id
 
         self.refresh_dev_tokens()
-    
+
     def _get_spotify_playlist(self, playlist_url):
-        playlist_id_idx = playlist_url.find('playlist/') + 9
-        user_idx = playlist_url.find('user/') + 0
-        # 'playlist/' wasn't found
+        # TODO: add some security for malicious links
+        playlist_id_idx = playlist_url.find('playlist/')
+        user_idx = playlist_url.find('user/')
+
+        # 'playlist/' wasn't found in the url
         if playlist_id_idx == -1:
             return 'Invalid playlist url.'
 
-        user_id = ''
-        if user_idx != -1:
+        playlist_id = playlist_url[playlist_id_idx + 9:]
+
+        if user_idx == -1:
+            user_id = ''
+        else:
             user_id = playlist_url[user_idx:]
-        playlist_id = playlist_url[playlist_id_idx:]
+
         playlist = self.spotify.user_playlist_tracks(user_id, playlist_id, fields=None, limit=100)
 
         return playlist
 
     def _get_track_ids(self, playlist):
         track_ids = []
-        not_found = []
-        for i in range(playlist['total']):
-            name = playlist['items'][i]['track']['name']
-            artist = playlist['items'][i]['track']['artists'][0]['name']
-            album = playlist['items'][i]['track']['album']['name']
+        isrcs = []
 
-            track = self.am.search(name, types=['songs'], limit=5)
-            try:
-                # for song 
-                id =  track['results']['songs']['data'][0]['id']
-                track_ids.append(id)
-            except KeyError as e:
-                not_found.append(name)
-        return (track_ids, not_found)
+        for i in range(playlist['total']):
+            isrc = playlist['items'][i]['track']['external_ids']['isrc']
+            isrcs.append(isrc)
+
+        tracks = self.am.songs_by_isrc(isrcs)
+        included = set()
+        for track in tracks['data']:
+            # Don't check for album name because of Greatest Hits albums and similar compilation albums,
+            # but keep the artist check to ensure the correct song is chosen
+            track_info = "%s %s" % (track['attributes']['name'], track['attributes']['artistName'])
+            if track_info not in included:
+                included.add(track_info)
+                track_ids.append(track['id'])
+
+        return track_ids
 
     def _create_apple_playlist(self, name, description=None, track_ids=None, include=None):
         return self.am.create_playlist(name, description, track_ids, include)
@@ -115,8 +124,9 @@ class PortPlaylist():
         self.am.user_access_token = token
 
     def refresh_dev_tokens(self):
-        client_credentials_manager = util.oauth2.SpotifyClientCredentials(client_id=self.s_client_id, client_secret=self.s_client_secret)
-        token = client_credentials_manager.get_access_token()
+        credentials = util.oauth2.SpotifyClientCredentials(client_id=self.s_client_id,
+                                                           client_secret=self.s_client_secret)
+        token = credentials.get_access_token()
         self.spotify = spotipy.Spotify(token)
 
         self.am = MyAppleMusic(self.a_secret, self.a_key_id, self.a_team_id)

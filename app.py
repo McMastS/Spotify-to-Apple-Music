@@ -37,18 +37,17 @@ def login():
     # Reload port every time user logs in to ensure API tokens remain valid
     port.refresh_dev_tokens()
     port.set_a_user_token(request.json['Music-User-Token'])
-    body = {}
+
     resp = Response(status=204)
     return resp
 
 @app.route('/playlist/', methods=['GET', 'POST'])
 @app.route('/playlist/<int:id>', methods=['DELETE'])
-def playlist(id=None):
+def playlist(playlist_id=None):
     if request.method == 'POST':
-        # TODO: Show tracks not found after creating playlist
-        resp, _not_found = port.port_playlist(request.form['spotifyLink'],
-                                              request.form['applePlaylistName'],
-                                              description=request.form['applePlaylistDesc'])
+        resp = port.port_playlist(request.form['spotifyLink'],
+                                  request.form['applePlaylistName'],
+                                  description=request.form['applePlaylistDesc'])
 
         spotify_link = request.form['spotifyLink']
         apple_link = resp['data'][0]['href']
@@ -64,7 +63,7 @@ def playlist(id=None):
         return redirect(url_for('history'))
 
     if request.method == 'DELETE':
-        playlist_to_delete = Playlist.query.get_or_404(id)
+        playlist_to_delete = Playlist.query.get_or_404(playlist_id)
         print(playlist_to_delete, file=sys.stderr)
         try:
             db.session.delete(playlist_to_delete)
@@ -72,17 +71,15 @@ def playlist(id=None):
         except:
             return 'Something went wrong deleting.'
 
-        body = {}
-        resp = Response(body, status=204)
+        resp = Response(status=204)
         return resp
 
-    
     return render_template('playlist.html', a_dev_token=port.a_dev_token)
 
 @app.route('/history', methods=['GET'])
 def history():
-    history = Playlist.query.order_by(Playlist.date_added).all()
-    return render_template('history.html', history=history)
+    playlists = Playlist.query.order_by(Playlist.date_added).all()
+    return render_template('history.html', playlists=playlists)
 
 if __name__ == "__main__":
     app.run(debug=True)
