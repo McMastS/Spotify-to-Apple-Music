@@ -102,7 +102,7 @@ class PortPlaylist():
         included = set()
         for track in tracks['data']:
             # Don't check for album name because of Greatest Hits albums and similar compilation albums,
-            # but keep the artist check to ensure the correct song is chosen
+            # but keep the artist check to ensure only one of each song is chosen
             track_info = "%s %s" % (track['attributes']['name'], track['attributes']['artistName'])
             if track_info not in included:
                 included.add(track_info)
