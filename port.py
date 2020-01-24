@@ -1,4 +1,5 @@
 import json
+import math
 import requests
 import spotipy
 import applemusicpy
@@ -94,19 +95,32 @@ class PortPlaylist():
         track_ids = []
         isrcs = []
 
-        for i in range(playlist['total']):
-            isrc = playlist['items'][i]['track']['external_ids']['isrc']
-            isrcs.append(isrc)
+        # Apples songs by isrc endpoint only accepts 25 isrcs at a time
+        # so break them up into seperate lists of max 25
+        num_tracks = playlist['total']
+        offset = 0
+        for i in range(math.ceil(num_tracks/25)):
+            temp = []
+            for j in range(25):
+                try:
+                    isrc = playlist['items'][j + offset]['track']['external_ids']['isrc']
+                    temp.append(isrc)
+                except IndexError:
+                    break
+            isrcs.append(temp)
+            offset += 25
 
-        tracks = self.am.songs_by_isrc(isrcs)
+        # Keep track of which songs have been added to the track list
         included = set()
-        for track in tracks['data']:
-            # Don't check for album name because of Greatest Hits albums and similar compilation albums,
-            # but keep the artist check to ensure only one of each song is chosen
-            track_info = "%s %s" % (track['attributes']['name'], track['attributes']['artistName'])
-            if track_info not in included:
-                included.add(track_info)
-                track_ids.append(track['id'])
+        for isrc_list in isrcs:
+            tracks = self.am.songs_by_isrc(isrc_list)
+            for track in tracks['data']:
+                # Don't check for album name because of Greatest Hits albums and similar compilation albums,
+                # but keep the artist check to ensure only one of each song is chosen
+                track_info = "%s %s" % (track['attributes']['name'], track['attributes']['artistName'])
+                if track_info not in included:
+                    included.add(track_info)
+                    track_ids.append(track['id'])
 
         return track_ids
 
@@ -115,10 +129,10 @@ class PortPlaylist():
 
     def port_playlist(self, playlist_url, name, description=None):
         playlist = self._get_spotify_playlist(playlist_url)
-        track_ids, not_found = self._get_track_ids(playlist)
+        track_ids = self._get_track_ids(playlist)
 
         resp = self._create_apple_playlist(name, description=description, track_ids=track_ids)
-        return (resp, not_found)
+        return resp
 
     def set_a_user_token(self, token):
         self.am.user_access_token = token
